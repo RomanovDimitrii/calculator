@@ -1,4 +1,5 @@
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
+import React from 'react';
 import Calculator from './Calculator';
 import { describe, it, expect, afterEach } from 'vitest';
 afterEach(cleanup);

@@ -17,6 +17,20 @@ const Calculator: React.FC = () => {
     } else if (value === 'C') {
       setInput('');
       setResult('0');
+    } else if (value === '√') {
+      try {
+        const currentValue = parseFloat(input);
+        if (isNaN(currentValue)) {
+          setResult('Error');
+        } else {
+          const sqrtResult = Math.sqrt(currentValue);
+          setResult(sqrtResult.toString());
+          setInput(sqrtResult.toString());
+        }
+      } catch (e) {
+        setResult('Error');
+        console.log(e);
+      }
     } else {
       // Проверка на начальный ввод
       if (input === '0' && value === '0') return;
@@ -65,9 +79,6 @@ const Calculator: React.FC = () => {
   return (
     <div className="calculator__wrap">
       <div className="calculator">
-        {/* <div className="calculator__display">
-          <div data-testid="input-display">{input || '0'}</div>
-        </div> */}
         <div className="calculator__display" data-testid="input-display">
           {input || '0'}
         </div>
