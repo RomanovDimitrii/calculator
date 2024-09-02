@@ -18,14 +18,32 @@ const Calculator: React.FC = () => {
       setInput('');
       setResult('0');
     } else if (value === '√') {
+      if (input === '') {
+        setInput('√');
+      } else {
+        try {
+          const currentValue = parseFloat(input);
+          if (isNaN(currentValue)) {
+            setResult('Error');
+          } else {
+            const sqrtResult = Math.sqrt(currentValue);
+            setResult(sqrtResult.toString());
+            setInput(sqrtResult.toString());
+          }
+        } catch (e) {
+          setResult('Error');
+          console.log(e);
+        }
+      }
+    } else if (value === '%') {
       try {
         const currentValue = parseFloat(input);
         if (isNaN(currentValue)) {
           setResult('Error');
         } else {
-          const sqrtResult = Math.sqrt(currentValue);
-          setResult(sqrtResult.toString());
-          setInput(sqrtResult.toString());
+          const percentResult = currentValue / 100;
+          setResult(percentResult.toString());
+          setInput(percentResult.toString());
         }
       } catch (e) {
         setResult('Error');
@@ -64,7 +82,11 @@ const Calculator: React.FC = () => {
 
   const calculateExpression = (expression: string) => {
     try {
-      const sanitizedExpression = expression.replace(/[^-()\d/*+.]/g, '');
+      const sanitizedExpression = expression.replace(/[^-()\d/*+.√]/g, '');
+      if (sanitizedExpression.includes('√')) {
+        const number = parseFloat(sanitizedExpression.replace('√', ''));
+        return Math.sqrt(number);
+      }
       return Function(`'use strict'; return (${sanitizedExpression})`)();
     } catch (e) {
       console.log(e);

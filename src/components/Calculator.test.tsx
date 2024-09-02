@@ -1,4 +1,5 @@
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
+// @ts-expect-error: React import is required for JSX usage in this file
 import React from 'react';
 import Calculator from './Calculator';
 import { describe, it, expect, afterEach } from 'vitest';
