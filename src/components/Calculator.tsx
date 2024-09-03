@@ -18,37 +18,9 @@ const Calculator: React.FC = () => {
       setInput('');
       setResult('0');
     } else if (value === '√') {
-      if (input === '') {
-        setInput('√');
-      } else {
-        try {
-          const currentValue = parseFloat(input);
-          if (isNaN(currentValue)) {
-            setResult('Error');
-          } else {
-            const sqrtResult = Math.sqrt(currentValue);
-            setResult(sqrtResult.toString());
-            setInput(sqrtResult.toString());
-          }
-        } catch (e) {
-          setResult('Error');
-          console.log(e);
-        }
-      }
+      setInput(prev => prev + '√');
     } else if (value === '%') {
-      try {
-        const currentValue = parseFloat(input);
-        if (isNaN(currentValue)) {
-          setResult('Error');
-        } else {
-          const percentResult = currentValue / 100;
-          setResult(percentResult.toString());
-          setInput(percentResult.toString());
-        }
-      } catch (e) {
-        setResult('Error');
-        console.log(e);
-      }
+      setInput(prev => `${prev}%`);
     } else {
       // Проверка на начальный ввод
       if (input === '0' && value === '0') return;
@@ -82,12 +54,25 @@ const Calculator: React.FC = () => {
 
   const calculateExpression = (expression: string) => {
     try {
-      const sanitizedExpression = expression.replace(/[^-()\d/*+.√]/g, '');
-      if (sanitizedExpression.includes('√')) {
-        const number = parseFloat(sanitizedExpression.replace('√', ''));
-        return Math.sqrt(number);
-      }
-      return Function(`'use strict'; return (${sanitizedExpression})`)();
+      // Преобразование выражения для поддержки корня квадратного и процентов
+      const transformedExpression = expression
+        .replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)')
+        .replace(/(\d+(\.\d+)?)%/g, (match, p1) => {
+          const previousExpression = expression.substring(0, expression.indexOf(match)).trim();
+          const lastOperatorMatch = previousExpression.match(/[-+/*]/g);
+          const lastOperator = lastOperatorMatch ? lastOperatorMatch.pop() : null;
+          const lastNumberMatch = previousExpression.match(/(\d+(\.\d+)?)(?=[-+/*]?$)/);
+          const lastNumber = lastNumberMatch ? parseFloat(lastNumberMatch[0]) : 1;
+
+          if (lastOperator === '+' || lastOperator === '-') {
+            return `(${lastNumber} * ${parseFloat(p1)} / 100)`;
+          } else {
+            return `(${p1} / 100)`;
+          }
+        })
+        .replace(/√/g, 'Math.sqrt');
+
+      return new Function(`'use strict'; return (${transformedExpression})`)();
     } catch (e) {
       console.log(e);
       return 'Error';

@@ -3,7 +3,9 @@ import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import Calculator from './Calculator';
 import { describe, it, expect, afterEach } from 'vitest';
+
 afterEach(cleanup);
+
 describe('Calculator', () => {
   it('should render calculator with default values', () => {
     render(<Calculator />);
@@ -125,18 +127,67 @@ describe('Calculator', () => {
     fireEvent.keyDown(window, { key: 'Backspace' });
 
     inputDisplay = screen.getByTestId('input-display');
-    expect(inputDisplay.textContent).toBe('1+'); // Проверка после первого Backspace
+    expect(inputDisplay.textContent).toBe('1+');
 
     // второе нажатие Backspace
     fireEvent.keyDown(window, { key: 'Backspace' });
 
     inputDisplay = screen.getByTestId('input-display');
-    expect(inputDisplay.textContent).toBe('1'); // Проверка после второго Backspace
+    expect(inputDisplay.textContent).toBe('1');
 
     // третье Backspace
     fireEvent.keyDown(window, { key: 'Backspace' });
 
     inputDisplay = screen.getByTestId('input-display');
-    expect(inputDisplay.textContent).toBe('0'); // Проверка после третьего Backspace
+    expect(inputDisplay.textContent).toBe('0');
+  });
+
+  it('should correctly calculate square root followed by addition', () => {
+    render(<Calculator />);
+    const sqrtButton = screen.getByTestId('btn-√');
+    const button9 = screen.getByTestId('btn-9');
+    const plusButton = screen.getByTestId('btn-+');
+    const button3 = screen.getByTestId('btn-3');
+    const equalsButton = screen.getByTestId('btn-=');
+
+    fireEvent.click(sqrtButton);
+    fireEvent.click(button9);
+    fireEvent.click(plusButton);
+    fireEvent.click(button3);
+    fireEvent.click(equalsButton);
+
+    const resultDisplay = screen.getByTestId('result-display');
+
+    expect(resultDisplay.textContent).toBe('6'); // Проверка корректного вычисления √9 + 3
+  });
+
+  it('should correctly calculate complex percentage expression', () => {
+    render(<Calculator />);
+
+    const button1 = screen.getByTestId('btn-1');
+    const button0 = screen.getByTestId('btn-0');
+    const button5 = screen.getByTestId('btn-5');
+    const plusButton = screen.getByTestId('btn-+');
+    const percentButton = screen.getByTestId('btn-%');
+    const multiplyButton = screen.getByTestId('btn-*');
+    const equalsButton = screen.getByTestId('btn-=');
+
+    fireEvent.keyDown(window, { key: '(' });
+    fireEvent.click(button1);
+    fireEvent.click(button0);
+    fireEvent.click(plusButton);
+    fireEvent.click(button5);
+    fireEvent.click(button0);
+    fireEvent.click(percentButton);
+    fireEvent.keyDown(window, { key: ')' });
+    fireEvent.click(multiplyButton);
+    fireEvent.click(button1);
+    fireEvent.click(button0);
+    fireEvent.click(percentButton);
+    fireEvent.click(equalsButton);
+
+    const resultDisplay = screen.getByTestId('result-display');
+
+    expect(resultDisplay.textContent).toBe('1.5'); // Проверка корректного вычисления (10 + 50%) * 10%
   });
 });
