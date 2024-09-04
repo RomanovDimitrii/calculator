@@ -6,30 +6,59 @@ const Calculator: React.FC = () => {
   const [result, setResult] = useState<string>('0'); // результат
 
   const handleButtonClick = (value: string) => {
-    if (value === '=') {
-      try {
-        const evaluatedResult = calculateExpression(input);
-        setResult(evaluatedResult.toString());
-      } catch (e) {
-        setResult('Error');
-        console.log(e);
-      }
-    } else if (value === 'C') {
-      setInput('');
-      setResult('0');
-    } else if (value === '√') {
-      setInput(prev => prev + '√');
-    } else if (value === '%') {
-      setInput(prev => `${prev}%`);
-    } else {
-      // Проверка на начальный ввод
-      if (input === '0' && value === '0') return;
-      if (input === '' && value === '0') {
-        setInput('0');
-      } else {
-        setInput(prev => (prev === '0' && value !== '00' ? value : prev + value));
-      }
+    switch (value) {
+      case '=':
+        calculateResult();
+        break;
+      case 'C':
+        clearInput();
+        break;
+      case '√':
+        handleSquareRoot();
+        break;
+      case '%':
+        appendInput('%');
+        break;
+      default:
+        appendInput(value);
+        break;
     }
+  };
+
+  const calculateResult = () => {
+    try {
+      const evaluatedResult = calculateExpression(input);
+      setResult(evaluatedResult.toString());
+    } catch (e) {
+      setResult('Error');
+      console.log(e);
+    }
+  };
+
+  const clearInput = () => {
+    setInput('');
+    setResult('0');
+  };
+
+  const handleSquareRoot = () => {
+    setInput(prev => {
+      const lastChar = prev.slice(-1);
+
+      if (/\d/.test(lastChar)) {
+        const lastNumberMatch = prev.match(/(\d+(\.\d+)?)$/);
+        if (lastNumberMatch) {
+          const number = lastNumberMatch[0];
+          const beforeNumber = prev.slice(0, prev.length - number.length);
+          return `${beforeNumber}√${number}`;
+        }
+      }
+      return `${prev}√`;
+    });
+  };
+
+  const appendInput = (value: string) => {
+    if (value === '0' && input === '0') return;
+    setInput(prev => (prev === '0' && value !== '00' ? value : prev + value));
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -54,8 +83,8 @@ const Calculator: React.FC = () => {
 
   const calculateExpression = (expression: string) => {
     try {
-      // Преобразование выражения для поддержки корня квадратного и процентов
       const transformedExpression = expression
+        .replace(/(\d+(\.\d+)?)√/g, '√$1')
         .replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)')
         .replace(/(\d+(\.\d+)?)%/g, (match, p1) => {
           const previousExpression = expression.substring(0, expression.indexOf(match)).trim();
